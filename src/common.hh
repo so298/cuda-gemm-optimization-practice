@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 class GemmBench {
@@ -29,6 +31,7 @@ class Options {
   size_t K;
   size_t M;
   size_t num_iter;
+  bool test = false;
 
   Options(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
@@ -41,6 +44,8 @@ class Options {
         M = std::stoul(argv[++i]);
       } else if (arg == "-i") {
         num_iter = std::stoul(argv[++i]);
+      } else if (arg == "--test") {
+        test = true;
       }
     }
 
@@ -56,3 +61,15 @@ class Options {
     std::cout << "num_iter: " << num_iter << std::endl;
   }
 };
+
+std::string matrix_to_str(size_t row, size_t col, GemmBench::T* matrix) {
+  std::ostringstream oss;
+  for (size_t i = 0; i < row; ++i) {
+    for (size_t j = 0; j < col; ++j) {
+      size_t index = i * col + j;
+      oss << std::setw(9) << std::setfill(' ') << std::left << matrix[index];
+    }
+    oss << "\n";
+  }
+  return oss.str();
+}

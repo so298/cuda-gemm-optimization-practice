@@ -7,13 +7,13 @@ __global__ void kernel_gpu_naive(size_t N, size_t K, size_t M, GemmBench::T* A,
                                  GemmBench::T* B, GemmBench::T* C) {
   size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-  size_t x = idx % M;  // col idx of C
-  size_t y = idx / M;  // row idx of C
+  size_t x = idx / M;  // row idx of C
+  size_t y = idx % M;  // col idx of C
 
-  if (idx < N * M) {
+  if (x < M && y < N) {
     GemmBench::T sum = 0;
-    for (size_t i = 0; i < K; i++) {
-      sum += A[x * K + i] * B[i * M + y];
+    for (size_t k = 0; k < K; k++) {
+      sum += A[x * K + k] * B[k * M + y];
     }
     C[x * M + y] = sum;
   }
@@ -35,6 +35,11 @@ class GemmBenchNaive : public GemmBench {
 int main(int argc, char** argv) {
   Options opts(argc, argv);
   GemmBenchNaive bench;
+
+  if (opts.test) {
+    test_benchmark(bench, opts.N, opts.K, opts.M);
+    return 0;
+  }
 
   run_benchmark(bench, opts.num_iter, opts.N, opts.K, opts.M);
 }
