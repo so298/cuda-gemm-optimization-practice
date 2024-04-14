@@ -3,14 +3,15 @@
 #include "common.hh"
 #include "common_gpu.cuh"
 
-__global__ void kernel_gpu_naive(size_t N, size_t K, size_t M, GemmBench::T* A,
-                                 GemmBench::T* B, GemmBench::T* C) {
+__global__ void kernel_non_coalesced(size_t N, size_t K, size_t M,
+                                        GemmBench::T* A, GemmBench::T* B,
+                                        GemmBench::T* C) {
   size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-  size_t r = idx / M;  // row idx of C
-  size_t c = idx % M;  // col idx of C
+  size_t r = idx % N;  // row idx of C
+  size_t c = idx / N;  // col idx of C
 
-  if (r < N) {
+  if (c < M) {
     GemmBench::T sum = 0;
     for (size_t k = 0; k < K; k++) {
       sum += A[r * K + k] * B[k * M + c];
@@ -26,7 +27,7 @@ class GemmBenchImpl : public GemmBench {
     size_t grid_size = (N * M + block_size - 1) / block_size;
 
     for (int i = 0; i < num_iter; i++) {
-      kernel_gpu_naive<<<grid_size, block_size>>>(N, K, M, A, B, C);
+      kernel_non_coalesced<<<grid_size, block_size>>>(N, K, M, A, B, C);
       CUDA_CHECK(cudaDeviceSynchronize());
     }
   }
