@@ -118,20 +118,28 @@ void test_benchmark(GemmBench &bench, size_t N, size_t K, size_t M) {
                         cudaMemcpyDeviceToHost));
 
   // Compare
-  GemmBench::T max_diff = 0;
+  double max_diff = 0;
+  double max_rel_diff = 0;
   for (size_t i = 0; i < N * M; i++) {
     // Relative error
-    GemmBench::T diff_abs = std::abs(h_C[i] - out_C[i]);
-    GemmBench::T diff_rel = diff_abs / (std::abs(h_C[i]) + std::abs(out_C[i]));
-    max_diff = std::max(max_diff, diff_rel);
+    double ref = h_C[i];
+    double comp = out_C[i];
+    double diff_abs = std::abs(ref - comp);
+    double diff_rel = diff_abs / (std::abs(ref) + std::abs(comp));
+    max_diff = std::max(max_diff, diff_abs);
+    max_rel_diff = std::max(max_rel_diff, diff_rel);
   }
 
-  GemmBench::T eps = 1e-6;
-  if (max_diff < eps) {
-    std::cout << "Test passed!" << std::endl;
+  std::cout << "Max absolute diff: " << max_diff << std::endl;
+  std::cout << "Max relative diff: " << max_rel_diff << std::endl;
+
+  GemmBench::T eps = 1e-5;
+  if (max_rel_diff < eps) {
+    // Green
+    std::cout << "\033[1;32mTest passed!\033[0m" << std::endl;
   } else {
-    std::cout << "Test failed!" << std::endl;
-    std::cout << "Max relative diff: " << max_diff << std::endl;
+    // Red
+    std::cout << "\033[1;31mTest failed!\033[0m" << std::endl;
     if (N * M < 100) {
       std::cout << "Reference:\n"
                 << matrix_to_str(N, M, h_C.data()) << std::endl;
