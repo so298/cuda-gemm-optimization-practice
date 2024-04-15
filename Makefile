@@ -25,5 +25,9 @@ exe/%: src/%.cu
 	@mkdir -p exe
 	$(NVCC) $(NVCCFLAGS) $< -o $@
 
+exe/99-cublas: src/99-cublas.cu
+	@mkdir -p exe
+	$(NVCC) $(NVCCFLAGS) $< -lcublas -o $@
+
 clean:
 	rm -f $(CC_EXECUTABLES) $(CU_EXECUTABLES)
