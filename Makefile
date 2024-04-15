@@ -2,7 +2,7 @@ CXX = g++
 NVCC = nvcc
 
 CXXFLAGS = -O3 -std=c++20 -Wall
-NVCCFLAGS = -arch=sm_80 -O3 -std=c++17 -Xcompiler -Wall
+NVCCFLAGS = -gencode=arch=compute_80,code=sm_80 -O3 -std=c++17 -Xcompiler -Wall
 
 CC_SOURCES = $(wildcard src/*.cc)
 CU_SOURCES = $(wildcard src/*.cu)

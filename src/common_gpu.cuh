@@ -102,8 +102,8 @@ void test_benchmark(GemmBench &bench, size_t N, size_t K, size_t M) {
 
   // Run CPU
   for (size_t i = 0; i < N; i++) {
-    for (size_t j = 0; j < M; j++) {
-      for (size_t k = 0; k < K; k++) {
+    for (size_t k = 0; k < K; k++) {
+      for (size_t j = 0; j < M; j++) {
         h_C[i * M + j] += h_A[i * K + k] * h_B[k * M + j];
       }
     }
@@ -120,15 +120,18 @@ void test_benchmark(GemmBench &bench, size_t N, size_t K, size_t M) {
   // Compare
   GemmBench::T max_diff = 0;
   for (size_t i = 0; i < N * M; i++) {
-    max_diff = std::max(max_diff, std::abs(h_C[i] - out_C[i]));
+    // Relative error
+    GemmBench::T diff_abs = std::abs(h_C[i] - out_C[i]);
+    GemmBench::T diff_rel = diff_abs / (std::abs(h_C[i]) + std::abs(out_C[i]));
+    max_diff = std::max(max_diff, diff_rel);
   }
 
-  GemmBench::T eps = 1e-4;
+  GemmBench::T eps = 1e-6;
   if (max_diff < eps) {
     std::cout << "Test passed!" << std::endl;
   } else {
     std::cout << "Test failed!" << std::endl;
-    std::cout << "Max diff: " << max_diff << std::endl;
+    std::cout << "Max relative diff: " << max_diff << std::endl;
     if (N * M < 100) {
       std::cout << "Reference:\n"
                 << matrix_to_str(N, M, h_C.data()) << std::endl;
